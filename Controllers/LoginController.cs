@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Diagnostics.Metrics;
 using System.Numerics;
 using System.Security.Principal;
 
@@ -47,11 +48,6 @@ namespace AppointmentScheduler.Controllers
             return View(GetUsers());
         }
 
-        // GET: AdminController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
         //For SignUp Page
         // GET: AdminController/Create
         public ActionResult SignUp()
@@ -102,13 +98,13 @@ namespace AppointmentScheduler.Controllers
             _Connection.Open();
             SqlCommand cmd = new SqlCommand("Retrive_Password", _Connection);
             cmd.CommandType= CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("UserId", login_cred.Id);
+            cmd.Parameters.AddWithValue("@User_id", login_cred.Id);
             cmd.Parameters.AddWithValue("@Email",login_cred.Email);
             SqlDataReader dr = cmd.ExecuteReader();
             while (dr.Read())
             {
-                Console.WriteLine(dr[0]);
-                string psw = (string)dr[0];
+                Console.WriteLine(dr["Password"]);
+                string psw = (string)dr["Password"];
                 if(psw == login_cred.Password)
                 {
                     return true;
@@ -118,6 +114,25 @@ namespace AppointmentScheduler.Controllers
 
             return false;
         }
+
+        int RetriveId (LoginModel log)
+        {
+            _Connection.Open();
+            SqlCommand cmd = new SqlCommand("Fetch_detail", _Connection);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@Email",log.Email);
+            cmd.Parameters.AddWithValue("@UserName", log.UserName);
+            SqlDataReader dr = cmd.ExecuteReader();
+            int id=0;
+            while (dr.Read())
+            {
+                id = (int)dr[0];
+            }
+            dr.Close();
+            _Connection.Close();
+            return id;
+        }
+
         // POST: AdminController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -129,21 +144,15 @@ namespace AppointmentScheduler.Controllers
                 {
                     return RedirectToAction("Index", "Login");
                 }
-                if (LoginValidation(login))
-                {
-                    Console.WriteLine(LoginValidation(login));
-                    return RedirectToAction("Index","User");
-                }
                 else
                 {
-                    Console.WriteLine(LoginValidation(login));
-                    var response = new
-                    {
-                        message = "Your alert message here"
-                    };
-                    Response.WriteAsJsonAsync(response);
+                    int log_user = RetriveId(login);
+                    return RedirectToAction("Index", "Users", new { log = log_user });
+                }/*
+                else
+                {
                     return RedirectToAction("Login", "Login");
-                }
+                }*/
 
             }
             catch
@@ -152,19 +161,60 @@ namespace AppointmentScheduler.Controllers
             }
         }
 
+        // GET: AdminController/Details/5
+        public ActionResult Details(int id)
+        {
+            return View(GetUsers(id));
+        }
+        LoginModel GetUsers(int id)
+        {
+            _Connection.Open();
+            SqlCommand cmd = new SqlCommand("Get_User", _Connection);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@Id", id);
+            SqlDataReader reader = cmd.ExecuteReader();
+            LoginModel log = new();
+            while (reader.Read())
+            {
+                
+                log.Id = (int)reader[0];
+                log.UserName =(string) reader[1];
+                log.Password =(string) reader[4];
+                log.ContactNo = (Int64)reader[3];
+                log.Email = (string)reader[2];
+                log.Cmpy_name= (string)reader[5];
+            }
+            reader.Close();
+            _Connection.Close();
+            return log;
+        }
         // GET: AdminController/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            return View(GetUsers(id));
         }
-
+        void EditUser(int id, LoginModel log)
+        {
+            _Connection.Open();
+            SqlCommand cmd = new SqlCommand("Edit_User", _Connection);
+            cmd.CommandType=CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.Parameters.AddWithValue("UserName", log.UserName);
+            cmd.Parameters.AddWithValue("Email", log.Email);
+            cmd.Parameters.AddWithValue("ContactNo", log.ContactNo);
+            cmd.Parameters.AddWithValue("Password", log.Password);
+            cmd.Parameters.AddWithValue("Cmpy_name", log.Cmpy_name);
+            cmd.ExecuteNonQuery();
+            _Connection.Close();
+        }
         // POST: AdminController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(int id, LoginModel log)
         {
             try
             {
+                EditUser(id,log);
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -178,14 +228,24 @@ namespace AppointmentScheduler.Controllers
         {
             return View();
         }
+        void DeleteUser(int id)
+        {
+            _Connection.Open();
+            SqlCommand cmd = new SqlCommand("Delete_user", _Connection);
+            cmd.CommandType= CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.ExecuteNonQuery();
+            _Connection.Close();
+        }
 
         // POST: AdminController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult Delete(int id, LoginModel log)
         {
             try
             {
+                DeleteUser(id) ;
                 return RedirectToAction(nameof(Index));
             }
             catch

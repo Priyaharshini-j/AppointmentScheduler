@@ -4,6 +4,7 @@
     ViewData["Title"] = "Login";
 }
 
+
 <h1>Login</h1>
 <br/>
 <h4>Appointment Scheduler</h4>
@@ -31,7 +32,7 @@
             <br />
             <div class="form-group">
                 <label asp-for="Password" class="control-label"></label>
-                <input asp-for="Password" class="form-control" />
+                <input type="password" asp-for="Password" class="form-control" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <br />

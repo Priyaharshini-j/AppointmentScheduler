@@ -18,6 +18,7 @@ namespace AppointmentScheduler.Models
         [Required]
         public string Cmpy_name { get; set; }
         
+        public string message { get; set; } 
 
     }
 }
