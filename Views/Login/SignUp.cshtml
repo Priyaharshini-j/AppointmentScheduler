@@ -1,16 +1,17 @@
 ﻿@model AppointmentScheduler.Models.LoginModel
 
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "SignUp";
 }
 
-<h1>Login</h1>
-<br/>
-<h4>Appointment Scheduler</h4>
+<h1 class="modal-header">Sign Up</h1>
+
+
+<h4>Sign In to Keep your schedules organized</h4>
 <hr />
 <div class="row">
     <div-- class="col-md-4">
-        <form asp-action="Login">
+        <form asp-action="SignUp">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <!--div class="form-group">
                 <label asp-for="Id" class="control-label"></label>
@@ -22,27 +23,34 @@
                 <input asp-for="UserName" class="form-control" />
                 <span asp-validation-for="UserName" class="text-danger"></span>
             </div>
-            <br/>
             <div class="form-group">
                 <label asp-for="Email" class="control-label"></label>
                 <input asp-for="Email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
-            <br />
+            <div class="form-group">
+                <label asp-for="ContactNo" class="control-label"></label>
+                <input asp-for="ContactNo" class="form-control" />
+                <span asp-validation-for="ContactNo" class="text-danger"></span>
+            </div>
             <div class="form-group">
                 <label asp-for="Password" class="control-label"></label>
                 <input asp-for="Password" class="form-control" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
-            <br />
             <div class="form-group">
-                <input type="submit" value="LogIn" class="btn btn-primary" />
+                <label asp-for="Cmpy_name" class="control-label"></label>
+                <input asp-for="Cmpy_name" class="form-control" />
+                <span asp-validation-for="Cmpy_name" class="text-danger"></span>
             </div>
-            <br />
-            
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
         </form>
     </div>
 </div>
+
+
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
